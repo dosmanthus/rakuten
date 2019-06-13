@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Frontend Test Rakuten</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <link rel="stylesheet" type="text/css" href="main.css">
+</head>
+
+<body>
+  <script type="text/x-template" id="modal-template">
+    <transition name="modal">
+      <div class="modal-mask">
+        <div class="modal-wrapper">
+          <div class="modal-container">
+            <div class="modal-header">
+              <slot name="header"></slot>
+            </div>
+            <div class="modal-body">
+              <slot name="body"></slot>
+            </div>
+
+            <div class="modal-footer">
+              <a class="btn btn--cancel" href="#" @click.prevent="$emit('close')">Cancel</a>
+              <a class="btn" href="#" @click.prevent="$emit('save')">Save</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+  </script>
+  <div id="app">
+    <ul class="list user-list">
+      <li class="list__title u-flexbox">
+        <div>No.</div>
+        <div>Name</div>
+        <div>Phone</div>
+        <div>Email</div>
+        <div>Action</div>
+      </li>
+      <li class="list__item u-flexbox" v-for="(user, index) in userList" :key="user.email">
+        <div>{{ index + 1 }}</div>
+        <div>{{ user.name }}</div>
+        <div>{{ user.phone }}</div>
+        <div>{{ user.email }}</div>
+        <div>
+          <button @click="openDelete(index)">delete</button>
+          <button @click="modifyUser(index)">modify</button>
+        </div>
+      </li>
+    </ul>
+    <a class="btn" href="#" @click.prevent="addUser">Add</a>
+    <modal v-if="modifyVisible" @save="save" @close="cancel" :form="form" :errors="errors">
+      <h3 slot="header">{{ modalTitle }}</h3>
+      <div slot="body">
+        <input type="text" v-model="form.name" placeholder="name">
+        <input type="text" v-model="form.phone" placeholder="__ - ________">
+        <input type="text" v-model="form.email" placeholder="email">
+        <p v-if="errors && errors.length">
+          <b>Please correct the following error(s):</b>
+          <ul>
+            <li v-for="error in errors">{{ error }}</li>
+          </ul>
+        </p>
+      </div>
+    </modal>
+    <modal v-if="deleteVisible" @close="close" @save="deleteUser">
+      <h3 slot="header">Delete User</h3>
+      <div slot="body">
+        Are you sure to delete this user?
+      </div>
+    </modal>
+  </div>
+  <script>
+    Vue.component('modal', {
+      template: '#modal-template',
+      props: ['form', 'errors']
+    });
+
+    var app = new Vue({
+      el: '#app',
+      data: {
+        userList: [{
+            name: 'User1',
+            phone: '02-1234567',
+            email: 'aaa@mail.com'
+          },
+          {
+            name: 'User2',
+            phone: '02-1234568',
+            email: 'bbb@mail.com'
+          },
+          {
+            name: 'User3',
+            phone: null,
+            email: 'aaa@mail.com'
+          },
+          {
+            name: 'User4',
+            phone: null,
+            email: 'aaa@mail.com'
+          },
+          {
+            name: 'User5',
+            phone: '02-1234571',
+            email: 'aaa@mail.com'
+          }
+        ],
+        form: {
+          id: null,
+          name: null,
+          phone: null,
+          email: null
+        },
+        modifyVisible: false,
+        deleteVisible: false,
+        newItem: true,
+        errors: [],
+        target: null
+      },
+      computed: {
+        modalTitle() {
+          return this.newItem === true ? 'Add User' : 'Modify User';
+        }
+      },
+      methods: {
+        addUser() {
+          this.newItem = true;
+          this.modifyVisible = true;
+        },
+        deleteUser() {
+          this.userList.splice(this.target, 1);
+          this.close();
+        },
+        close() {
+          this.deleteVisible = false;
+        },
+        openDelete(index) {
+          this.target = index;
+          this.deleteVisible = true;
+        },
+        modifyUser(index) {
+          this.newItem = false;
+          const {
+            name,
+            phone,
+            email
+          } = this.userList[index];
+          this.form = {
+            index,
+            name,
+            phone,
+            email
+          };
+          this.modifyVisible = true;
+        },
+        cancel() {
+          this.modifyVisible = false;
+          this.errors = [];
+          this.form = {
+            name: null,
+            phone: null,
+            email: null
+          }
+        },
+        save() {
+          if (this.checkForm()) {
+            const {
+              index,
+              name,
+              phone,
+              email
+            } = this.form;
+            if (index) {
+              this.userList[index] = {
+                name,
+                phone,
+                email
+              }
+            } else {
+              this.userList.push({
+                name,
+                phone,
+                email
+              })
+            }
+            this.cancel();
+          }
+        },
+        checkForm() {
+          this.errors = [];
+          const {
+            index,
+            name,
+            phone,
+            email
+          } = this.form;
+
+          if (!name) {
+            this.errors.push("Name required.");
+          } else if (!this.validName(name, index)) {
+            this.errors.push('Name has already been taken.');
+          }
+          if (!email) {
+            this.errors.push('Email required.');
+          } else if (!this.validEmail(email)) {
+            this.errors.push('Valid email required.');
+          }
+
+          if (phone && !this.validPhone(phone)) {
+            this.errors.push('Valid phone required. e.g. 02-98765432');
+          }
+
+          if (!this.errors.length) {
+            return true;
+          }
+        },
+        validEmail(email) {
+          var re =
+            /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          return re.test(email);
+        },
+        validName(name, index) {
+          for (let i = 0; i < this.userList.length; i++) {
+            if (this.userList[i].name === name) {
+              return index ? this.userList[index].name === name : false;
+            }
+          }
+          return true;
+        },
+        validPhone(phone) {
+          var re =
+            /0[1-9]{1,2}-[0-9]{7,8}/;
+          return re.test(phone);
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>
