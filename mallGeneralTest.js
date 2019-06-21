@@ -17,22 +17,24 @@ console.log(reverseString('hello'));
 // Input: 14
 // Returns: False
 
-function isPerfectSquare(n) {
-  function sqrt(n) {
-    var x;
-    var x1 = n / 2;
-
-    do {
-      x = x1;
-      x1 = (x + (n / x)) / 2;
-    } while (x !== x1);
-    return x;
+// binary search
+var isPerfectSquare = function (num) {
+  var left = 1;
+  var right = num;
+  while (left <= right) {
+    var mid = Math.floor((left + right) / 2);
+    var temp = mid * mid;
+    if (temp === num) return true;
+    else if (temp > num) right = mid - 1;
+    else left = mid + 1;
   }
-
-  return n > 0 && sqrt(n) % 1 === 0;
+  return false;
 }
 
-console.log(`isPerfectSquare(9): ${isPerfectSquare(9)}`)
+console.log(isPerfectSquare(12))
+console.log(isPerfectSquare(16))
+
+// note: https://medium.com/@dd0425/algorithm-leetcode-367-valid-perfect-square-javascript-%E5%AE%8C%E5%85%A8%E5%B9%B3%E6%96%B9%E6%95%B8-e87bcdeb86
 
 // Q3. Given a set of non-overlapping intervals, insert a new interval into the intervals
 // (merge if necessary).
@@ -93,7 +95,7 @@ console.log(insert([
 // word = "ABCB", -> returns false.
 
 // DFS
-function wordSearch (board, word) {
+function wordSearch(board, word) {
   if (word === "") return true;
   var i, j;
   for (i = 0; i < board.length; i++)
@@ -119,9 +121,9 @@ function wordSearch (board, word) {
 };
 
 var board = [
-  ['A','B','C','E'],
-  ['S','F','C','S'],
-  ['A','D','E','E']
+  ['A', 'B', 'C', 'E'],
+  ['S', 'F', 'C', 'S'],
+  ['A', 'D', 'E', 'E']
 ];
 var word = "ABCCED";
 
@@ -132,11 +134,13 @@ console.log(wordSearch(board, word));
 // Example:
 // Given a = 1 and b = 2, return 3.
 
-function getSum (a, b) {
-  if(b===0) return a;
-  var sum=a^b;
-  var carry=(a & b) << 1;
-  return getSum(sum,carry);
+function getSum(a, b) {
+  if (b === 0) return a;
+  var sum = a ^ b;
+  var carry = (a & b) << 1;
+  return getSum(sum, carry);
 };
 
-console.log(getSum(1,2))
+console.log(getSum(1, 2))
+
+// note: https://medium.com/@dd0425/%E4%BD%8D%E5%85%83%E9%81%8B%E7%AE%97-leetcode-371-sum-of-two-integers-f96d5be5c417
