@@ -94,14 +94,15 @@ console.log(insert([
 // word = "SEE", -> returns true,
 // word = "ABCB", -> returns false.
 
-// DFS
 function wordSearch(board, word) {
   if (word === "") return true;
-  var i, j;
-  for (i = 0; i < board.length; i++)
-    for (j = 0; j < board[i].length; j++)
-      if (board[i][j] === word[0])
-        if (dfs(0, i, j)) return true;
+  for (var row = 0; row < board.length; row++) {
+    for (var col = 0; col < board[row].length; col++) {
+      if (board[row][col] === word[0]) {
+        if (dfs(0, row, col)) return true;
+      }
+    }
+  }
   return false;
 
   function dfs(index, x, y) {
@@ -115,6 +116,7 @@ function wordSearch(board, word) {
       if (dfs(index + 1, x, y - 1)) return true; //left
       if (dfs(index + 1, x, y + 1)) return true; //right
       board[x][y] = ch;
+      // backtracking到前一個節點
     }
     return false;
   }
@@ -125,9 +127,13 @@ var board = [
   ['S', 'F', 'C', 'S'],
   ['A', 'D', 'E', 'E']
 ];
-var word = "ABCCED";
+var word1 = "ABCCED";
+var word2 = "ABFA";
 
-console.log(wordSearch(board, word));
+console.log(wordSearch(board, word1));
+console.log(wordSearch(board, word2));
+
+// note: https://medium.com/@dd0425/algorithm-leetcode-79-word-search-javascript-dfs-%E6%B7%B1%E5%BA%A6%E5%84%AA%E5%85%88%E6%90%9C%E5%B0%8B-fa6bab9cae08?postPublishedType=initial
 
 // Q5. Calculate the sum of two integers a and b, but you are not allowed to use the operator
 // + and -.
